@@ -1,3 +1,125 @@
 @import './common';
 @import './example';
-@import './searchForm';
+
+
+body {
+    background: rgba(3, 77, 35, 0.26);
+}
+
+.search-form {
+    background-color: rgb(3, 77, 35);
+    padding: 20px;
+    text-align: center;
+
+
+    &__input {
+        border-radius: 4px;
+        outline: none;
+        font-size: 10px;
+        width: 200px;
+        height: 30px;
+        border: 0px;
+        position: absolute;
+        padding-left: 10px;
+      }
+
+    &__btn {
+        height: 30px;
+        cursor: pointer;
+        border-radius: 4px;
+        outline: none;
+        border: 0px;
+      }
+
+      &__img {
+        width: 50px;
+        padding-right: 10px;
+    }
+  }
+
+  .svg {
+    width: 16px;
+    height: 12px;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-left: 200px;
+    display: flex;
+  }
+  
+  .gallery {
+    padding-top: 100px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 15px;
+    padding-bottom: 50px;
+  }
+  
+  .photo-card {
+    width: 350px;
+  
+    &__item {
+      width: 350px;
+      height: 200px;
+      overflow: hidden;
+    }
+  
+    &__image {
+      object-fit: cover;
+      width: 350px;
+      height: 200px;
+      transition: transform 200ms linear;
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+  }
+  
+  .info {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    border: 1px solid #cfcfcf;
+    padding: 0 10px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.12), 0px 1px 1px rgba(0, 0, 0, 0.14),
+      0px 2px 1px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.02em;
+  
+    &-item {
+      display: flex;
+      flex-direction: column;
+      margin: 10px auto;
+      letter-spacing: 0.02em;
+    }
+  }
+  
+  .load-more {
+    display: none;
+    margin: 0 auto;
+    margin-bottom: 50px;
+    font-weight: 500;
+    background-color: rgb(3, 77, 35);
+    border: none;
+    border-radius: 3px;
+    color: #ffffff;
+    width: 125px;
+    height: 45px;
+    font-size: 20px;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.12), 0px 1px 1px rgba(0, 0, 0, 0.14),
+      0px 2px 1px rgba(0, 0, 0, 0.2);
+    transition: all 100ms linear;
+  }
+  
+  .load-more:hover {
+    background-color: rgb(5, 142, 64);
+    color: #01240f;
+  }
+  
+  .is-visible {
+    display: block;
+  }
