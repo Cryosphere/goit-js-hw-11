@@ -1,4 +1,4 @@
-import { fetchPhoto } from './fetchPhoto';
+import { fetchPhoto } from './js/fetchPhoto';
 import { Notify } from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
