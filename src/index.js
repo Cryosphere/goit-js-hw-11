@@ -1,70 +1,87 @@
-import { fetchPhoto } from './js/fetchPhoto';
 import { Notify } from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-
-let lightBox = new SimpleLightbox('.gallery a');
+import { fetchImages } from './api';
 
 const searchForm = document.querySelector('#search-form');
-const searchQuery = document.querySelector('input[name="searchQuery"]');
+const loadMoreButtton = document.querySelector('.load-more');
 const gallery = document.querySelector('.gallery');
-const loadMoreBtn = document.querySelector('.load-more');
 
-let numberOfPicture = 0;
-let currentPage = 0;
-let totalHits = 0;
+searchForm.addEventListener('submit', onSearchForm);
+loadMoreButtton.addEventListener('click', onLoadMoreButton);
 
-const searchPhotos = e => {
+let searchRequest = '';
+let page = 1;
+let perPage = 39;
+let simpleLb;
+
+function onSearchForm(e) {
   e.preventDefault();
+  page = 1;
+  let searchRequest = e.currentTarget.searchQuery.value.trim();
   gallery.innerHTML = '';
-  currentPage = 1;
-  loadMoreBtn.classList.remove('is-visible');
-  renderSearchPhotos();
-};
+  loadMoreButtton.classList.add('is-hidden');
+  if (!searchRequest) return;
 
-const renderSearchPhotos = async () => {
-  try {
-    const photos = await fetchPhoto(searchQuery.value, currentPage);
-    if (photos.hits.length !== 0) {
-      renderPhotoListItems(photos.hits, gallery, currentPage);      
-      if (currentPage >= 1) {
-        loadMoreBtn.classList.add('is-visible');
-        Notify.success(`Hooray! We found ${photos.totalHits} images.`);
+  fetchImages(searchRequest, page, perPage)
+    .then(({ data }) => {
+      if (data.totalHits === 0) {
+        alertNoImagesFound();
+      } else {
+        createMarkup(data.hits);
+        simpleLb = new SimpleLightbox('.gallery a', {
+          captionsData: 'alt',
+          captionPosition: 'bottom',
+          captionDelay: 250,
+          enableKeyboard: true,
+        }).refresh();
+        alertImagesFound(data);
+
+        if (data.totalHits > perPage) {
+          loadMoreButtton.classList.remove('is-hidden');
+        }
       }
-      currentPage += 1;
-      totalHits = photos.totalHits;
-    } else {
-      Notify.failure(
-        'Sorry, there are no images matching your search query. Please try again.'
-      );
-      gallery.innerHTML = '';
-    }
-  } catch (error) {
-    if (searchQuery.value.trim() !== '') {
-      console.log(error.message);
-      console.log('Something WRONG 0_o !?!');
-    } else {
-      Notify.failure('Empty search query. Please enter required images');
-      gallery.innerHTML = '';
-    }
-  }
-};
-
-function checkEndOfHits() {
-  numberOfPicture = document.querySelectorAll('.photo-card');
-
-  if (totalHits > numberOfPicture.length) {
-    renderSearchPhotos();
-  } else {
-    loadMoreBtn.classList.remove('is-visible');
-    Notify.info("We're sorry, but you've reached the end of search results.");
-  }
+    })
+    .catch(error => console.log(error));
 }
 
-function renderPhotoListItems(hits, wrapper, page) { 
-  const markup = hits
-    .map(
-      ({
+function onLoadMoreButton() {
+  page += 1;
+  simpleLb.destroy();
+
+  fetchImages(searchRequest, page, perPage)
+    .then(({ data }) => {
+      createMarkup(data.hits);
+      simpleLb = new SimpleLightbox('.gallery a').refresh();
+
+      const totalPages = Math.ceil(data.totalHits / perPage);
+
+      if (page === totalPages) {
+        loadMoreButtton.classList.add('is-hidden');
+        alertEndOfSearch();
+      }
+    })
+    .catch(error => console.log(error));
+}
+
+function alertImagesFound(data) {
+  Notify.success(`Hooray! We found ${data.totalHits} images.`);
+}
+
+function alertNoImagesFound() {
+  Notify.failure(
+    'Sorry, there are no images matching your search query. Please try again.'
+  );
+}
+
+function alertEndOfSearch() {
+  Notify.failure("We're sorry, but you've reached the end of search results.");
+}
+
+function createMarkup(images) {
+  const markup = images
+    .map(image => {
+      const {
         largeImageURL,
         webformatURL,
         tags,
@@ -72,51 +89,22 @@ function renderPhotoListItems(hits, wrapper, page) {
         views,
         comments,
         downloads,
-      }) =>
-        `
-      <div class="photo-card">
-        <div class="photo-card__item">
-          <a class="photo-card__link" href="${largeImageURL}">
-            <img
-              class="photo-card__image"
-              src=${webformatURL}
-              alt="${tags}"
-              loading="lazy"
-              >
-            </a>
+      } = image;
+      return `
+        <a class="gallery__link" href="${largeImageURL}">
+          <div class="gallery-item">
+            <img class="gallery-item__img" src="${webformatURL}" alt="${tags}" loading="lazy" />
+            <div class="info">
+              <p class="info-item"><b>Likes</b>${likes}</p>
+              <p class="info-item"><b>Views</b>${views}</p>
+              <p class="info-item"><b>Comments</b>${comments}</p>
+              <p class="info-item"><b>Downloads</b>${downloads}</p>
+            </div>
           </div>
-        <div class="info">
-          <p class="info-item">
-            <b>Likes</b> ${likes}
-          </p>
-          <p class="info-item">
-            <b>Views</b> ${views}
-          </p>
-          <p class="info-item">
-            <b>Comments</b> ${comments}
-          </p>
-          <p class="info-item">
-            <b>Downloads</b> ${downloads}
-          </p>
-        </div>
-        </div>
-      `
-    )
+        </a>
+      `;
+    })
     .join('');
-  wrapper.insertAdjacentHTML('beforeend', markup);
 
-  lightBox.refresh(); 
-  if (page >= 2) {
-    const { height: cardHeight } = document
-      .querySelector('.gallery')
-      .firstElementChild.getBoundingClientRect();
-
-    window.scrollBy({
-      top: cardHeight * 2,
-      behavior: 'smooth',
-    });
-  }
+  gallery.insertAdjacentHTML('beforeend', markup);
 }
-
-searchForm.addEventListener('submit', searchPhotos);
-loadMoreBtn.addEventListener('click', checkEndOfHits);
