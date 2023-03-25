@@ -1,5 +1,5 @@
 import axios from 'axios';
-const axios = require('axios');
+// const axios = require('axios');
 
 export const fetchPhoto = async (input, page) => {
   const key = '28305156-2c31ea34b0b957161935cfaa0';
